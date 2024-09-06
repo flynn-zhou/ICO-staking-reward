@@ -39,17 +39,20 @@ const index = () => {
   const [selectedToken, setSelectedToken] = useState();
 
   const LOAD_DATA = async () => {
-    if (address) {
-      setLoader(true);
-      const data = await CONTRACT_DATA(address);
-      setPoolDetails(data);
-      setLoader(false);
-    }
+    // if (address) {
+
+    // }
+    setLoader(true);
+    const data = await CONTRACT_DATA(address);
+    setPoolDetails(data);
+    setLoader(false);
   };
 
   useEffect(() => {
     LOAD_DATA();
   }, [address]);
+
+  // console.log("poolDetails: ", poolDetails);
 
   return (
     <div className="body-backgroundColor">

@@ -77,7 +77,10 @@ export const DAPP_ERC20 = async (tokenAddress, userAddress) => {
     const totalSupply = await contractObject.totalSupply();
 
     //user
-    const userBalance = await contractObject.balanceOf(userAddress);
+    let userBalance = 0;
+    if (userAddress && userAddress.length > 0) {
+      userBalance = await contractObject.balanceOf(userAddress);
+    }
 
     //dapp
     const contractDappTokenBalance = await contractObject.balanceOf(

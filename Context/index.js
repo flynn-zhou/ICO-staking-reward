@@ -54,86 +54,86 @@ export async function CONTRACT_DATA(address) {
   try {
     const dappContractObj = await dappContract();
 
-    if (address) {
-      const contractOwner = await dappContractObj.owner();
-      const contractAddress = await dappContractObj.address;
+    const contractOwner = await dappContractObj.owner();
+    const contractAddress = await dappContractObj.address;
 
-      //Notifications && format
-      const notifications = await dappContractObj.getNotifications();
+    //Notifications && format
+    const notifications = await dappContractObj.getNotifications();
 
-      const _notificationsArray = await Promise.all(
-        notifications.map(
-          async ({ poolId, user, amount, typeOf, timestamp }) => {
-            return {
-              poolId: poolId.toNumber(),
-              user,
-              amount: toEth(amount),
-              typeOf,
-              timestamp: CONVERT_TIMESTAMP_TO_READABLE(timestamp),
-            };
-          }
-        )
-      );
-
-      let poolInfoArray = [];
-      const poolLength = await dappContractObj.poolCount();
-
-      const length = poolLength.toNumber();
-      for (let i = 0; i < length; i++) {
-        const poolInfo = await dappContractObj.poolInfos(i);
-
-        const userInfo = await dappContractObj.userInfo(i, address);
-        const userRewards = await dappContractObj.pendingRewards(i, address);
-
-        const tokenPoolInfoA = await DAPP_ERC20(DEPOSIT_TOKEN_ADDRESS, address);
-        const tokenPoolInfoB = await DAPP_ERC20(REWARD_TOKEN_ADDRESS, address);
-
-        const pool = {
-          depositTokenAddress: poolInfo.depositToken,
-          rewardTokenAddress: poolInfo.rewardToken,
-          depositToken: tokenPoolInfoA,
-          rewardToken: tokenPoolInfoB,
-          depositedAmount: toEth(poolInfo.depositedAmount.toString()),
-          apy: poolInfo.apy.toString(),
-          lockDays: poolInfo.lockDays.toString(),
-          amount: toEth(userInfo.amount.toString()),
-          userRewards: toEth(userRewards),
-          lockUntil: CONVERT_TIMESTAMP_TO_READABLE(
-            userInfo.lockUntil.toNumber()
-          ),
-          lastRewardAt: CONVERT_TIMESTAMP_TO_READABLE(
-            userInfo.lastRewardAt.toNumber()
-          ),
+    const _notificationsArray = await Promise.all(
+      notifications.map(async ({ poolId, user, amount, typeOf, timestamp }) => {
+        return {
+          poolId: poolId.toNumber(),
+          user,
+          amount: toEth(amount),
+          typeOf,
+          timestamp: CONVERT_TIMESTAMP_TO_READABLE(timestamp),
         };
-        //push
-        poolInfoArray.push(pool);
+      })
+    );
+
+    let poolInfoArray = [];
+    const poolLength = await dappContractObj.poolCount();
+
+    const length = poolLength.toNumber();
+    for (let i = 0; i < length; i++) {
+      const poolInfo = await dappContractObj.poolInfos(i);
+
+      let userInfo;
+      let userRewards = 0;
+      if (address && address.length > 0) {
+        userInfo = await dappContractObj.userInfo(i, address);
+        userRewards = await dappContractObj.pendingRewards(i, address);
       }
 
-      let totalDepositedAmount = 0;
-      if (poolInfoArray.length > 0) {
-        totalDepositedAmount = poolInfoArray.reduce((total, pool) => {
-          return total + parseFloat(pool.depositedAmount);
-        }, 0);
-      }
+      const tokenPoolInfoA = await DAPP_ERC20(DEPOSIT_TOKEN_ADDRESS, address);
+      const tokenPoolInfoB = await DAPP_ERC20(REWARD_TOKEN_ADDRESS, address);
 
-      const depositToken = await DAPP_ERC20(DEPOSIT_TOKEN_ADDRESS, address);
-      const rewardToken = await DAPP_ERC20(REWARD_TOKEN_ADDRESS, address);
-
-      const data = {
-        contractOwner: contractOwner,
-        contractAddress: contractAddress,
-        notifications: _notificationsArray.reverse(),
-        depositToken,
-        rewardToken,
-        poolInfoArray,
-        totalDepositedAmount,
-        contractDappTokenBalance:
-          depositToken.contractDappTokenBalance - totalDepositedAmount,
+      const pool = {
+        depositTokenAddress: poolInfo.depositToken,
+        rewardTokenAddress: poolInfo.rewardToken,
+        depositToken: tokenPoolInfoA,
+        rewardToken: tokenPoolInfoB,
+        depositedAmount: toEth(poolInfo.depositedAmount.toString()),
+        apy: poolInfo.apy.toString(),
+        lockDays: poolInfo.lockDays.toString(),
+        amount: userInfo?.amount ? toEth(userInfo?.amount?.toString()) : "",
+        userRewards: toEth(userRewards),
+        lockUntil: CONVERT_TIMESTAMP_TO_READABLE(
+          userInfo?.lockUntil?.toNumber()
+        ),
+        lastRewardAt: CONVERT_TIMESTAMP_TO_READABLE(
+          userInfo?.lastRewardAt?.toNumber()
+        ),
       };
-
-      // console.log("CONTRACT_DATA: ", data);
-      return data;
+      //push
+      poolInfoArray.push(pool);
     }
+
+    let totalDepositedAmount = 0;
+    if (poolInfoArray.length > 0) {
+      totalDepositedAmount = poolInfoArray.reduce((total, pool) => {
+        return total + parseFloat(pool.depositedAmount);
+      }, 0);
+    }
+
+    const depositToken = await DAPP_ERC20(DEPOSIT_TOKEN_ADDRESS, address);
+    const rewardToken = await DAPP_ERC20(REWARD_TOKEN_ADDRESS, address);
+
+    const data = {
+      contractOwner: contractOwner,
+      contractAddress: contractAddress,
+      notifications: _notificationsArray.reverse(),
+      depositToken,
+      rewardToken,
+      poolInfoArray,
+      totalDepositedAmount,
+      contractDappTokenBalance:
+        depositToken.contractDappTokenBalance - totalDepositedAmount,
+    };
+
+    // console.log("CONTRACT_DATA: ", data);
+    return data;
   } catch (error) {
     console.log(error);
     console.log(parseErrorMsg(error));

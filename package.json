@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && next export",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -15,13 +15,17 @@
     "@nextui-org/react": "^1.0.0-beta.9",
     "@rainbow-me/rainbowkit": "^0.4.6",
     "@types/react-icons": "^3.0.0",
+    "@walletconnect/ethereum-provider": "^2.16.0",
+    "@web3modal/standalone": "^2.4.3",
     "ethers": "^5.7.2",
     "lodash": "^4.17.21",
+    "moralis-v1": "^1.13.0",
     "next": "13.4.13",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hot-toast": "^2.4.1",
     "react-icons": "^4.12.0",
-    "wagmi": "^0.6.4"
+    "wagmi": "^0.6.4",
+    "zustand": "^4.5.5"
   }
 }
